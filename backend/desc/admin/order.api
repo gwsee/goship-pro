@@ -1,0 +1,51 @@
+syntax = "v1"
+
+type (
+	AdminOrderItem {
+		Id                uint64 `json:"id"`
+		OrderNo           string `json:"orderNo"`
+		UserEmail         string `json:"userEmail"`
+		ProductId         uint64 `json:"productId"`
+		ProductTitle      string `json:"productTitle"`
+		ProductType       string `json:"productType"`
+		LemonOrderId      string `json:"lemonOrderId"`
+		AmountCents       uint64 `json:"amountCents"`
+		Currency          string `json:"currency"`
+		PaymentStatus     string `json:"paymentStatus"`
+		FulfillmentStatus string `json:"fulfillmentStatus"`
+		ShippingInfo      string `json:"shippingInfo"`
+		TrackingNumber    string `json:"trackingNumber"`
+		CustomerNote      string `json:"customerNote"`
+		CreatedAt         string `json:"createdAt"`
+	}
+	AdminOrderListReq {
+		Page              int64  `form:"page,default=1"`
+		PageSize          int64  `form:"pageSize,default=20"`
+		PaymentStatus     string `form:"paymentStatus,optional"`
+		FulfillmentStatus string `form:"fulfillmentStatus,optional"`
+	}
+	AdminOrderListResp {
+		Total int64            `json:"total"`
+		List  []AdminOrderItem `json:"list"`
+	}
+	AdminFulfillOrderReq {
+		OrderId        uint64 `json:"orderId"`
+		TrackingNumber string `json:"trackingNumber"`
+	}
+)
+
+@server (
+	prefix:     /api/v1/admin
+	group:      admin/order
+	jwt:        Auth
+	middleware: AdminAuth
+)
+service goship {
+	@doc "后台获取订单列表"
+	@handler GetAdminOrders
+	get /orders (AdminOrderListReq) returns (AdminOrderListResp)
+
+	@doc "后台实物订单发货 (回填运单号)"
+	@handler FulfillOrder
+	post /orders/fulfill (AdminFulfillOrderReq) returns (NilResp)
+}

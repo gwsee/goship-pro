@@ -1,0 +1,21 @@
+syntax = "v1"
+
+info (
+	title:   "GoShip Pro API"
+	desc:    "Modular Monolith API for Overseas SaaS & Commerce"
+	author:  "gwsee"
+	version: "v1.0.0"
+)
+
+// 1. 引入基础公共定义
+import "base.api"
+// 2. 引入前台商城模块
+import "store/auth.api"
+import "store/product.api"
+// 3. 引入用户中心模块
+import "user/profile.api"
+import "user/order.api"
+// 4. 引入后台管理模块
+import "admin/product.api"
+import "admin/order.api"
+import "admin/user.api"

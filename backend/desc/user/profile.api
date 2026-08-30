@@ -1,0 +1,22 @@
+syntax = "v1"
+
+type (
+	AIGenerateReq {
+		Prompt string `json:"prompt"`
+	}
+)
+
+@server (
+	prefix: /api/v1/user
+	group:  user/profile
+	jwt:    Auth
+)
+service goship {
+	@doc "获取当前登录用户资料与点数"
+	@handler GetProfile
+	get /profile returns (UserVo)
+
+	@doc "AI 流式生成演示 (SSE)"
+	@handler AIGenerate
+	post /ai/generate (AIGenerateReq)
+}

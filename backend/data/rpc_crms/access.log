@@ -1,0 +1,6 @@
+{"@timestamp":"2026-08-30T18:51:03.059+08:00","caller":"database/db.go:117","content":"数据库连接成功，驱动: mysql","level":"info"}
+{"@timestamp":"2026-08-30T18:52:50.197+08:00","caller":"database/db.go:117","content":"数据库连接成功，驱动: mysql","level":"info"}
+{"@timestamp":"2026-08-30T18:53:32.622+08:00","caller":"database/db.go:117","content":"数据库连接成功，驱动: mysql","level":"info"}
+{"@timestamp":"2026-08-30T18:53:32.624+08:00","caller":"backend/goship.go:36","content":"Starting server at 127.0.0.1:8888...\n","level":"info"}
+{"@timestamp":"2026-08-30T18:55:14.935+08:00","caller":"database/db.go:117","content":"数据库连接成功，驱动: mysql","level":"info"}
+{"@timestamp":"2026-08-30T18:55:14.937+08:00","caller":"backend/goship.go:36","content":"Starting server at 127.0.0.1:8888...\n","level":"info"}

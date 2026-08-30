@@ -1,0 +1,62 @@
+syntax = "v1"
+
+type (
+	AdminUserItem {
+		Id        uint64 `json:"id"`
+		Email     string `json:"email"`
+		Role      string `json:"role"`
+		AvatarUrl string `json:"avatarUrl"`
+		Credits   int64  `json:"credits"`
+		GoogleId  string `json:"googleId"`
+		CreatedAt string `json:"createdAt"`
+	}
+	AdminUserListReq {
+		Page     int64  `form:"page,default=1"`
+		PageSize int64  `form:"pageSize,default=20"`
+		Keyword  string `form:"keyword,optional"`
+	}
+	AdminUserListResp {
+		Total int64           `json:"total"`
+		List  []AdminUserItem `json:"list"`
+	}
+	AdminAdjustCreditsReq {
+		UserId uint64 `json:"userId"`
+		Delta  int64  `json:"delta"`
+	}
+	ConfigItem {
+		ConfigKey   string `json:"configKey"`
+		ConfigValue string `json:"configValue"`
+		Description string `json:"description"`
+	}
+	AdminConfigListResp {
+		List []ConfigItem `json:"list"`
+	}
+	AdminUpdateConfigReq {
+		ConfigKey   string `json:"configKey"`
+		ConfigValue string `json:"configValue"`
+	}
+)
+
+@server (
+	prefix:     /api/v1/admin
+	group:      admin/user
+	jwt:        Auth
+	middleware: AdminAuth
+)
+service goship {
+	@doc "后台查看注册用户列表"
+	@handler GetAdminUsers
+	get /users (AdminUserListReq) returns (AdminUserListResp)
+
+	@doc "后台手动增减用户点数"
+	@handler AdjustUserCredits
+	post /users/credits (AdminAdjustCreditsReq) returns (NilResp)
+
+	@doc "后台获取系统全局配置"
+	@handler GetSystemConfigs
+	get /configs returns (AdminConfigListResp)
+
+	@doc "后台修改系统全局配置"
+	@handler UpdateSystemConfig
+	put /configs (AdminUpdateConfigReq) returns (NilResp)
+}

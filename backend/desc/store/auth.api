@@ -1,0 +1,38 @@
+syntax = "v1"
+
+type (
+	RegisterReq {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	LoginReq {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	GoogleAuthReq {
+		Code string `json:"code"`
+	}
+	LoginResp {
+		Token    string `json:"token"`
+		ExpireAt int64  `json:"expireAt"`
+		User     UserVo `json:"user"`
+	}
+)
+
+@server (
+	prefix: /api/v1/auth
+	group:  store/auth
+)
+service goship {
+	@doc "用户邮箱密码注册"
+	@handler Register
+	post /register (RegisterReq) returns (LoginResp)
+
+	@doc "用户邮箱密码登录"
+	@handler Login
+	post /login (LoginReq) returns (LoginResp)
+
+	@doc "Google OAuth 一键登录"
+	@handler GoogleAuth
+	post /google (GoogleAuthReq) returns (LoginResp)
+}

@@ -1,0 +1,113 @@
+syntax = "v1"
+
+// =============================================================================
+// 用户端：订单与支付数据结构定义 (User Order & Payment Structs)
+// =============================================================================
+
+type (
+	// 1. 前台用户下单并获取支付链接入参
+	CreateOrderCheckoutReq {
+		ProductId    uint64 `json:"productId"`              // 购买的商品ID
+		Quantity     int64  `json:"quantity,default=1"`     // 购买数量(默认1)
+		CustomerNote string `json:"customerNote,optional"`  // 买家下单备注留言
+	}
+	CreateOrderCheckoutResp {
+		OrderNo     string `json:"orderNo"`     // 系统生成的唯一订单号 (如 ORD_1718000000_1001)
+		CheckoutUrl string `json:"checkoutUrl"` // Lemon Squeezy 专属收银台支付链接
+		AmountCents uint64 `json:"amountCents"` // 应付总金额(美分)
+	}
+
+	// 2. 前台用户查询订单列表 (支持分页与状态筛选)
+	UserOrderListReq {
+		Page          int64  `form:"page,default=1"`
+		PageSize      int64  `form:"pageSize,default=10"`
+		PaymentStatus string `form:"paymentStatus,optional"` // pending(待付) / paid(已付) / refunded(退款)
+	}
+	UserOrderItem {
+		OrderNo           string `json:"orderNo"`
+		ProductId         uint64 `json:"productId"`
+		ProductTitle      string `json:"productTitle"`
+		CoverImage        string `json:"coverImage"`
+		ProductType       string `json:"productType"` // digital / physical
+		Quantity          int64  `json:"quantity"`
+		AmountCents       uint64 `json:"amountCents"`
+		Currency          string `json:"currency"`
+		PaymentStatus     string `json:"paymentStatus"`
+		FulfillmentStatus string `json:"fulfillmentStatus"`
+		TrackingNumber    string `json:"trackingNumber"` // 运单号
+		CreatedAt         string `json:"createdAt"`
+	}
+	UserOrderListResp {
+		Total int64           `json:"total"`
+		List  []UserOrderItem `json:"list"`
+	}
+
+	// 3. 前台用户查看单个订单详情
+	UserOrderDetailReq {
+		OrderNo string `path:"orderNo"`
+	}
+	UserOrderDetailResp {
+		OrderNo           string `json:"orderNo"`
+		ProductId         uint64 `json:"productId"`
+		ProductTitle      string `json:"productTitle"`
+		Description       string `json:"description"`
+		CoverImage        string `json:"coverImage"`
+		ProductType       string `json:"productType"`
+		AmountCents       uint64 `json:"amountCents"`
+		Currency          string `json:"currency"`
+		PaymentStatus     string `json:"paymentStatus"`
+		FulfillmentStatus string `json:"fulfillmentStatus"`
+		ShippingInfo      string `json:"shippingInfo"`   // 买家收件信息快照(JSON)
+		TrackingNumber    string `json:"trackingNumber"` // 物流单号
+		CustomerNote      string `json:"customerNote"`   // 留言
+		CreatedAt         string `json:"createdAt"`
+		PaidAt            string `json:"paidAt,optional"`
+	}
+
+	// 4. 前台支付结果轮询接口 (老外付款完成后跳回网站查状态)
+	UserOrderStatusReq {
+		OrderNo string `path:"orderNo"`
+	}
+	UserOrderStatusResp {
+		OrderNo           string `json:"orderNo"`
+		PaymentStatus     string `json:"paymentStatus"`     // paid / pending
+		FulfillmentStatus string `json:"fulfillmentStatus"` // fulfilled / unfulfilled
+		CreditsRewarded   int64  `json:"creditsRewarded"`   // 若为虚拟品，充值的点数
+	}
+
+	// 5. 用户主动取消未支付订单
+	CancelOrderReq {
+		OrderNo string `path:"orderNo"`
+	}
+)
+
+// =============================================================================
+// 用户端：订单与支付路由组 (必须带普通 User JWT)
+// =============================================================================
+
+@server (
+	prefix: /api/v1/user
+	group:  user/order
+	jwt:    Auth
+)
+service goship {
+	@doc "【核心】前台用户下单并获取支付收银台链接"
+	@handler CreateOrderCheckout
+	post /orders/checkout (CreateOrderCheckoutReq) returns (CreateOrderCheckoutResp)
+
+	@doc "前台用户分页查询我的订单列表"
+	@handler GetMyOrders
+	get /orders (UserOrderListReq) returns (UserOrderListResp)
+
+	@doc "前台用户查看单个订单详情(含物流与收件地址)"
+	@handler GetOrderDetail
+	get /orders/:orderNo (UserOrderDetailReq) returns (UserOrderDetailResp)
+
+	@doc "前台支付结果轮询(付款跳回后检查是否已到账)"
+	@handler CheckOrderStatus
+	get /orders/:orderNo/status (UserOrderStatusReq) returns (UserOrderStatusResp)
+
+	@doc "前台用户取消未支付的 pending 订单"
+	@handler CancelPendingOrder
+	post /orders/:orderNo/cancel (CancelOrderReq) returns (NilResp)
+}

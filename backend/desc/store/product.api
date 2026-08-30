@@ -1,0 +1,46 @@
+syntax = "v1"
+
+type (
+	StoreProductItem {
+		Id             uint64 `json:"id"`
+		Title          string `json:"title"`
+		Slug           string `json:"slug"`
+		Description    string `json:"description"`
+		CoverImage     string `json:"coverImage"`
+		PriceCents     uint64 `json:"priceCents"`
+		ProductType    string `json:"productType"`
+		LemonVariantId string `json:"lemonVariantId"`
+		CreditsReward  int64  `json:"creditsReward"`
+		Metadata       string `json:"metadata,optional"`
+	}
+	StoreProductListResp {
+		List []StoreProductItem `json:"list"`
+	}
+	StoreProductDetailReq {
+		Slug string `path:"slug"`
+	}
+)
+
+@server (
+	prefix: /api/v1/store
+	group:  store/product
+)
+service goship {
+	@doc "获取前台已上架商品列表 (SSR展示)"
+	@handler GetStoreProducts
+	get /products returns (StoreProductListResp)
+
+	@doc "获取单个商品详情页"
+	@handler GetStoreProductDetail
+	get /products/:slug (StoreProductDetailReq) returns (StoreProductItem)
+}
+
+@server (
+	prefix: /api/v1/webhook
+	group:  store/webhook
+)
+service goship {
+	@doc "Lemon Squeezy 支付成功回调通知"
+	@handler LemonSqueezyWebhook
+	post /lemonsqueezy
+}

@@ -1,0 +1,16 @@
+syntax = "v1"
+
+type (
+	// 通用空响应
+	NilResp {}
+
+	// 用户基础 VO
+	UserVo {
+		Id        uint64 `json:"id"`
+		Email     string `json:"email"`
+		Role      string `json:"role"`
+		AvatarUrl string `json:"avatarUrl"`
+		Credits   int64  `json:"credits"`
+		CreatedAt string `json:"createdAt"`
+	}
+)

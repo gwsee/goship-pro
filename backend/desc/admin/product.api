@@ -1,0 +1,84 @@
+syntax = "v1"
+
+type (
+	AdminProductItem {
+		Id             uint64 `json:"id"`
+		Title          string `json:"title"`
+		Slug           string `json:"slug"`
+		Description    string `json:"description"`
+		CoverImage     string `json:"coverImage"`
+		PriceCents     uint64 `json:"priceCents"`
+		ProductType    string `json:"productType"`
+		StockCount     int64  `json:"stockCount"`
+		LemonVariantId string `json:"lemonVariantId"`
+		CreditsReward  int64  `json:"creditsReward"`
+		Status         string `json:"status"`
+		SortOrder      int64  `json:"sortOrder"`
+		Metadata       string `json:"metadata,optional"`
+		CreatedAt      string `json:"createdAt"`
+		UpdatedAt      string `json:"updatedAt"`
+	}
+	AdminProductListReq {
+		Page     int64  `form:"page,default=1"`
+		PageSize int64  `form:"pageSize,default=20"`
+		Status   string `form:"status,optional"`
+		Keyword  string `form:"keyword,optional"`
+	}
+	AdminProductListResp {
+		Total int64              `json:"total"`
+		List  []AdminProductItem `json:"list"`
+	}
+	AdminSaveProductReq {
+		Id             uint64 `json:"id,optional"`
+		Title          string `json:"title"`
+		Slug           string `json:"slug"`
+		Description    string `json:"description"`
+		CoverImage     string `json:"coverImage"`
+		PriceCents     uint64 `json:"priceCents"`
+		ProductType    string `json:"productType"`
+		StockCount     int64  `json:"stockCount,default=-1"`
+		LemonVariantId string `json:"lemonVariantId"`
+		CreditsReward  int64  `json:"creditsReward,default=0"`
+		Status         string `json:"status,default=draft"`
+		SortOrder      int64  `json:"sortOrder,default=0"`
+		Metadata       string `json:"metadata,optional"`
+	}
+	AdminToggleStatusReq {
+		Id     uint64 `path:"id"`
+		Status string `json:"status"`
+	}
+	AdminDeleteProductReq {
+		Id uint64 `path:"id"`
+	}
+	AdminUploadResp {
+		Url string `json:"url"`
+	}
+)
+
+@server (
+	prefix:     /api/v1/admin
+	group:      admin/product
+	jwt:        Auth
+	middleware: AdminAuth
+)
+service goship {
+	@doc "后台获取商品列表"
+	@handler GetAdminProducts
+	get /products (AdminProductListReq) returns (AdminProductListResp)
+
+	@doc "后台新增/修改商品"
+	@handler SaveAdminProduct
+	post /products (AdminSaveProductReq) returns (NilResp)
+
+	@doc "后台上下架切换"
+	@handler ToggleProductStatus
+	patch /products/:id/status (AdminToggleStatusReq) returns (NilResp)
+
+	@doc "后台删除商品"
+	@handler DeleteProduct
+	delete /products/:id (AdminDeleteProductReq) returns (NilResp)
+
+	@doc "直传 Cloudflare R2 图片"
+	@handler UploadAsset
+	post /upload returns (AdminUploadResp)
+}
